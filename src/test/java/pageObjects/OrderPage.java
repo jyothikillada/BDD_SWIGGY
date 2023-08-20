@@ -77,7 +77,7 @@ public class OrderPage extends BasePage{
 	public void clickCart() {
 		synchronized (cart) {
             try {
-            	cart.wait(5000);
+            	cart.wait(8000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -43,6 +43,7 @@ public class OrderItem {
 	Logger logger; //for logging
     ResourceBundle resourceBundle; // To Read properties file
     String browser; //to store browser name
+    String expectedResult;
 	
 	@Before
     public void setup()    //Cucumber hook - executes once before starting
@@ -114,10 +115,11 @@ public class OrderItem {
 		 datamap=DataReader.data(System.getProperty("user.dir")+"\\testData\\Order_Data.xlsx", "Sheet1");
 		 int index=Integer.parseInt(rows)-1;
 	     String item= datamap.get(index).get("item");
+	     expectedResult = datamap.get(index).get("res");
 	     orderPage.searchFood(item); 
 	     orderPage.selectSuggestion();
 	     orderPage.clickAdd();
-	     orderPage.clickAddItem();
+	     //orderPage.clickAddItem();
 	     orderPage.clickCart();
 	     
 	 }
@@ -126,14 +128,28 @@ public class OrderItem {
 		 checkOutPage = new CheckOutPage(driver);
 		 boolean isLoginButtonDisplayed =
 			 checkOutPage.isLoginDisplayed();
-		
-				 if (isLoginButtonDisplayed) { logger.info("Checkout Page Displayed  ");
-				  Assert.assertTrue(true); }
-				 else {
-				  logger.info("Checkout Page NOT Displayed  "); Assert.assertTrue(false); 
-				  }
+		 if(expectedResult.equals("Valid")) {
+			 if (isLoginButtonDisplayed) { 
+				 logger.info("Checkout Page Displayed  ");
+			  Assert.assertTrue(true); }
+			 else {
+			  logger.info("Checkout Page NOT Displayed  "); 
+			  Assert.assertTrue(false); 
+			  } 
+		 }
+		 
+		 if(expectedResult.equals("Invalid")) {
+			 if (isLoginButtonDisplayed) { 
+				 logger.info("Checkout Page Displayed  ");
+			  Assert.assertTrue(false); }
+			 else {
+			  logger.info("Checkout Page NOT Displayed  "); 
+			  Assert.assertTrue(true); 
+			  }
+		 }
+				 
 				  
-				  driver.close();
+		driver.close();
 
 	 }
 
