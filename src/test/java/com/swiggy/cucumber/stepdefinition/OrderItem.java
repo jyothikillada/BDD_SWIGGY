@@ -1,13 +1,14 @@
 package com.swiggy.cucumber.stepdefinition;
 
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
-
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
@@ -19,6 +20,8 @@ import pageObjects.LandingPage;
 import pageObjects.OrderPage;
 import utilities.DataReader;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 
@@ -37,22 +40,28 @@ public class OrderItem {
 	LandingPage landingPage;
 	OrderPage orderPage;
 	CheckOutPage checkOutPage;
-	
+	String nodeURL;
 	List<HashMap<String, String>> datamap; //Data driven
 	
 	Logger logger; //for logging
     ResourceBundle resourceBundle; // To Read properties file
     String browser; //to store browser name
     String expectedResult;
-	
+    DesiredCapabilities cap;
 	@Before
-    public void setup()    //Cucumber hook - executes once before starting
+    public void setup() throws MalformedURLException    //Cucumber hook - executes once before starting
     {
 		//for logging
+		
         logger= LogManager.getLogger(this.getClass());
         //Reading config.properties (for browser)
         resourceBundle=ResourceBundle.getBundle("config");
         browser=resourceBundle.getString("browser");     
+        
+        nodeURL = "http://192.168.0.105:4444/wd/hub";
+        cap = new DesiredCapabilities();
+		
+       
     }
 	
 	@After
@@ -65,28 +74,37 @@ public class OrderItem {
         	scenario.attach(screenshot, "image/png",scenario.getName());
         	            
         }
+        
        driver.quit();
     }
 	
-	 @Given("User Launch Browser")
-	    public void user_launch_browser() {
+	 @SuppressWarnings("deprecation")
+	@Given("User Launch Browser")
+	    public void user_launch_browser() throws MalformedURLException {
 		 if(browser.equals("chrome"))
 	        {
-	           driver=new ChromeDriver();
+			driver = new ChromeDriver();
 	        }
 	        else if (browser.equals("firefox")) {
 	            driver = new FirefoxDriver();
 	        }
 	        else if (browser.equals("edge")) {
-	            driver = new EdgeDriver();
+	        	EdgeOptions options = new EdgeOptions();
+	        	//options.setBrowserVersion(browser);
+	        	cap.setBrowserName(browser);
+	        	cap.setPlatform(Platform.WIN10);
+	        	driver = new RemoteWebDriver(new URL (nodeURL),options);
+	           
 	        }
 	        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 	         }
 	 
 	 @Given("open Swiggy {string}")
 	 public void open_swiggy(String url) {
-		 driver.get(url);
-	     driver.manage().window().maximize();
+		 
+		 	
+			 driver.get(url);
+			 driver.manage().window().maximize();
 	 }
 
 	 @When("Set location {string}")
@@ -119,7 +137,7 @@ public class OrderItem {
 	     orderPage.searchFood(item); 
 	     orderPage.selectSuggestion();
 	     orderPage.clickAdd();
-	     //orderPage.clickAddItem();
+	     orderPage.clickAddItem();
 	     orderPage.clickCart();
 	     
 	 }
